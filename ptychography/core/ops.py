@@ -1,11 +1,25 @@
 # ptychography/core/ops.py
 
 from __future__ import annotations
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Sequence
 
 from ptychography.core.propagator import Propagator
 from ptychography.utils.types import ArrayLike
 from ptychography.backend.array import xp
+
+
+# ---------------------------------------------------------------------
+# Utility
+# ---------------------------------------------------------------------
+
+def _broadcastable(shape_a, shape_b) -> bool:
+    """
+    Check NumPy-style broadcast compatibility.
+    """
+    for a, b in zip(shape_a[::-1], shape_b[::-1]):
+        if a != b and a != 1 and b != 1:
+            return False
+    return True
 
 
 # ---------------------------------------------------------------------
@@ -14,34 +28,54 @@ from ptychography.backend.array import xp
 
 class Add(Propagator):
     """
-    Elementwise addition: y = x1 + x2 + ...
+    Elementwise addition: y = x1 + x2
     """
 
-    def compute(self, *inputs: ArrayLike) -> ArrayLike:
-        backend = xp()
-        out = backend.zeros_like(inputs[0])
-        for x in inputs:
-            out = out + x
-        return out
+    def check_inputs(self):
+        if len(self.inputs) != 2:
+            raise RuntimeError("Add expects exactly two input waves.")
+
+        s0 = self.inputs[0].shape
+        s1 = self.inputs[1].shape
+        if s0 is None or s1 is None:
+            return
+
+        if not _broadcastable(s0, s1):
+            raise ValueError(f"Add: shapes {s0} and {s1} are not broadcastable.")
+
+    def compute(self, x1: ArrayLike, x2: ArrayLike) -> ArrayLike:
+        return x1 + x2
 
 
 class Multiply(Propagator):
     """
-    Elementwise multiplication: y = x1 * x2 * ...
+    Elementwise multiplication: y = x1 * x2
     """
 
-    def compute(self, *inputs: ArrayLike) -> ArrayLike:
-        backend = xp()
-        out = backend.ones_like(inputs[0])
-        for x in inputs:
-            out = out * x
-        return out
+    def check_inputs(self):
+        if len(self.inputs) != 2:
+            raise RuntimeError("Multiply expects exactly two input waves.")
+
+        s0 = self.inputs[0].shape
+        s1 = self.inputs[1].shape
+        if s0 is None or s1 is None:
+            return
+
+        if not _broadcastable(s0, s1):
+            raise ValueError(f"Multiply: shapes {s0} and {s1} are not broadcastable.")
+
+    def compute(self, x1: ArrayLike, x2: ArrayLike) -> ArrayLike:
+        return x1 * x2
 
 
 class Abs(Propagator):
     """
     Elementwise absolute value: y = |x|
     """
+
+    def check_inputs(self):
+        if len(self.inputs) != 1:
+            raise RuntimeError("Abs expects exactly one input wave.")
 
     def compute(self, x: ArrayLike) -> ArrayLike:
         backend = xp()
@@ -57,9 +91,13 @@ class Power(Propagator):
         super().__init__(name=name or f"Power({p})")
         self.power = p
 
+    def check_inputs(self):
+        if len(self.inputs) != 1:
+            raise RuntimeError("Power expects exactly one input wave.")
+
     def compute(self, x: ArrayLike) -> ArrayLike:
         backend = xp()
-        return backend.power(x, self.p)
+        return backend.power(x, self.power)
 
 
 # ---------------------------------------------------------------------
@@ -85,6 +123,14 @@ class FFT2(Propagator):
         self.axes = axes
         self.norm = norm
 
+    def check_inputs(self):
+        if len(self.inputs) != 1:
+            raise RuntimeError("FFT2 expects exactly one input wave.")
+
+        ndim = self.inputs[0].ndim
+        if ndim is not None and ndim < 2:
+            raise ValueError("FFT2 requires input with ndim >= 2.")
+
     def compute(self, x: ArrayLike) -> ArrayLike:
         backend = xp()
         return backend.fft.fft2(
@@ -93,3 +139,28 @@ class FFT2(Propagator):
             axes=self.axes,
             norm=self.norm,
         )
+
+
+# ---------------------------------------------------------------------
+# Slice propagator
+# ---------------------------------------------------------------------
+
+class Slice(Propagator):
+    """
+    Slice propagator for ptychography.
+
+    Extracts object patches according to precomputed indices.
+    """
+
+    def __init__(self, indices: Sequence[Tuple[slice, slice]]):
+        super().__init__(name="Slice")
+        self.indices = list(indices)
+
+    def check_inputs(self):
+        if len(self.inputs) != 1:
+            raise RuntimeError("Slice expects exactly one input wave.")
+
+    def compute(self, x: ArrayLike) -> ArrayLike:
+        backend = xp()
+        patches = [x[sy, sx] for (sy, sx) in self.indices]
+        return backend.stack(patches, axis=0)

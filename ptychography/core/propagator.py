@@ -59,44 +59,43 @@ class Propagator:
         self.output = out
         return out
 
-    # ------------------------------------------------------------------
+    # --------------------------------------------------
     # Forward execution
-    # ------------------------------------------------------------------
+    # --------------------------------------------------
 
-    def forward(self):
+    def forward(self) -> None:
         """
-        Execute forward computation for this propagator.
+        Execute forward computation.
 
-        Reads data from input waves and writes result to output wave.
+        This method should NOT be overridden.
         """
-        if self.output is None:
-            raise RuntimeError("Propagator has no output wave.")
+        self.check_inputs()
 
-        inputs = [w.data for w in self.inputs]
-        result = self.compute(*inputs)
-        self.output.set_data(result)
-        return result
+        data_inputs = [w.data for w in self.inputs]
+        out = self.compute(*data_inputs)
+
+        self.output.set_data(out)
+
+    # --------------------------------------------------
+    # Hooks for subclasses
+    # --------------------------------------------------
+
+    def check_inputs(self) -> None:
+        """
+        Validate input waves.
+
+        Subclasses may override this.
+        """
+        pass
 
     def compute(self, *inputs):
         """
-        Numerical computation implemented by subclasses.
-
-        Parameters
-        ----------
-        *inputs : ArrayLike
-            Concrete array values from input waves.
-
-        Returns
-        -------
-        ArrayLike
-            Output array.
+        Compute output array from input arrays.
         """
         raise NotImplementedError
 
-    # ------------------------------------------------------------------
-    # Representation
-    # ------------------------------------------------------------------
+    # --------------------------------------------------
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         gen = self.generation if self.generation is not None else "?"
         return f"<{self.name} gen={gen}>"
