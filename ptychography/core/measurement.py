@@ -4,7 +4,8 @@ from __future__ import annotations
 from typing import Optional, Any
 
 from ptychography.core.wave import Wave
-from ptychography.data.diffraction import DiffractionData
+from ptychography.backend.array import xp
+from ptychography.backend.rng import get_rng
 
 
 class Measurement:
@@ -93,5 +94,40 @@ class Measurement:
     def __repr__(self) -> str:
         state = "connected" if self.input is not None else "unconnected"
         return f"<{self.name} ({state})>"
+
+
+class PoissonMeasurement(Measurement):
+    """
+    Poisson measurement node.
+
+    Applies Poisson noise to non-negative real-valued input.
+    """
+
+    def __init__(self, rng=None, name=None):
+        super().__init__(name=name or "PoissonMeasurement")
+        self.rng = rng
+
+    def compute(self, x):
+        xp_ = xp()
+
+        # ----------------------------
+        # Input validation
+        # ----------------------------
+        if not xp_.issubdtype(x.dtype, xp_.floating):
+            raise RuntimeError(
+                "PoissonMeasurement expects a real-valued input."
+            )
+
+        if xp_.any(x < 0):
+            raise RuntimeError(
+                "PoissonMeasurement expects non-negative input values."
+            )
+
+        # ----------------------------
+        # Poisson sampling
+        # ----------------------------
+        rng = self.rng or get_rng()
+        return rng.poisson(x)
+
 
 
