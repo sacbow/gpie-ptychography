@@ -71,11 +71,11 @@ def test_model_decorator_builds_graph_and_model():
     m = simple_model(ctx)
 
     # Basic sanity checks
-    assert m.context is ctx
-    assert m.graph is not None
+    assert m._context is ctx
+    assert m._graph is not None
 
     # Graph should have collected nodes
-    graph = m.graph
+    graph = m._graph
     assert len(graph.measurements) == 1
     assert len(graph.propagators) == 1
 
@@ -98,7 +98,7 @@ def test_forward_execution_propagates_data():
         DummyMeasurement() << y
 
     m = simple_model(ctx)
-    graph = m.graph
+    graph = m._graph
 
     # Inject concrete data
     x_data = np.array([[1.0, 2.0], [3.0, 4.0]])
@@ -131,7 +131,7 @@ def test_multiple_measurements_and_order():
         DummyMeasurement(name="m2") << y
 
     m = multi_measurement_model(ctx)
-    graph = m.graph
+    graph = m._graph
 
     graph.set_wave_data("x", np.array([1, 2, 3]))
     m.forward()

@@ -44,6 +44,9 @@ class Graph:
         # Build state
         self._built: bool = False
 
+        # associated context
+        self.context = None
+
     # ------------------------------------------------------------------
     # Active graph context (thread-local)
     # ------------------------------------------------------------------
