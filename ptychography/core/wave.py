@@ -82,6 +82,12 @@ class Wave:
         Attach concrete array data to this wave.
         """
         self._data = data
+    
+    def clear_data(self) -> None:
+        """
+        Clear concrete data attached to this wave.
+        """
+        self._data = None
 
     def is_set(self) -> bool:
         """

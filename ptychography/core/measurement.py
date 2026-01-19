@@ -38,20 +38,20 @@ class Measurement:
     # ------------------------------------------------------------------
 
     def __lshift__(self, wave: Wave):
-        """
-        Connect measurement to an input wave.
-
-        Usage
-        -----
-        measurement << wave
-        """
         if not isinstance(wave, Wave):
             raise TypeError("Measurement can only be connected to a Wave.")
-
+        
         if self.input is not None:
             raise RuntimeError("Measurement already has an input wave.")
 
         self.input = wave
+
+        # Register to active graph if exists
+        from ptychography.core.graph import Graph
+        graph = Graph.get_active_graph()
+        if graph is not None:
+            graph.add_measurement(self)
+
         return self
 
     # ------------------------------------------------------------------
