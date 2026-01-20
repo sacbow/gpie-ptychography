@@ -41,6 +41,7 @@ class DiffractionData:
     position: Tuple[float, float]
     intensity: object  # ndarray-like (NumPy or CuPy), float dtype recommended
     indices: Optional[Tuple[slice, slice]] = None
+    subpixel_shift: Optional[Tuple[float, float]] = None
     meta: Dict[str, Any] = field(default_factory=dict)
 
     # ---------------------------------------------------------------------
@@ -48,25 +49,25 @@ class DiffractionData:
     # ---------------------------------------------------------------------
 
     def validate(self) -> None:
-        """
-        Validate basic structural assumptions.
-
-        Raises
-        ------
-        TypeError
-            If intensity dtype is not floating.
-        ValueError
-            If intensity does not look like a 2D array.
-        """
         xp_ = xp()
         arr = xp_.asarray(self.intensity)
 
         if arr.ndim != 2:
-            raise ValueError(f"intensity must be 2D, got ndim={arr.ndim} (shape={arr.shape}).")
+            raise ValueError(
+                f"intensity must be 2D, got ndim={arr.ndim} (shape={arr.shape})."
+            )
 
-        # Accept any floating subtype (float16/32/64) for both NumPy/CuPy.
         if not xp_.issubdtype(arr.dtype, xp_.floating):
-            raise TypeError(f"intensity must be floating dtype, got dtype={arr.dtype}.")
+            raise TypeError(
+                f"intensity must be floating dtype, got dtype={arr.dtype}."
+            )
+
+        if self.subpixel_shift is not None:
+            dy, dx = self.subpixel_shift
+            if not all(isinstance(v, (int, float)) for v in (dy, dx)):
+                raise TypeError(
+                    f"subpixel_shift must be numeric (dy, dx), got {self.subpixel_shift}."
+                )
 
     @property
     def shape(self) -> Tuple[int, int]:

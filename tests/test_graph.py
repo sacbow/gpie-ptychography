@@ -111,7 +111,7 @@ def test_forward_execution_propagates_data():
     results = graph.collect_measurements()
     assert len(results) == 1
 
-    measured = results[0]
+    measured = results[0].data
     np.testing.assert_array_equal(measured, x_data)
 
 
@@ -139,8 +139,8 @@ def test_multiple_measurements_and_order():
     results = graph.collect_measurements()
     assert len(results) == 2
 
-    np.testing.assert_array_equal(results[0], np.array([1, 2, 3]))
-    np.testing.assert_array_equal(results[1], np.array([1, 2, 3]))
+    np.testing.assert_array_equal(results[0].data, np.array([1, 2, 3]))
+    np.testing.assert_array_equal(results[1].data, np.array([1, 2, 3]))
 
 
 def test_model_function_must_not_return_value():

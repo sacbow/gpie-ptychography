@@ -90,11 +90,11 @@ def test_simple_forward_simulation():
 
     model.forward()
 
-    measurements = model.get_measurements()
+    measurements = model._graph.collect_measurements()
 
     assert len(measurements) == 1
 
-    data = measurements[0]
+    data = measurements[0].data
 
     # ----------------------------
     # Validate output shape

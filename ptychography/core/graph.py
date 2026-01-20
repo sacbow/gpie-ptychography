@@ -258,7 +258,7 @@ class Graph:
         """
         Collect data objects from all measurement nodes (order preserved).
         """
-        return [m.data for m in self._measurements]
+        return self._measurements
 
     # ------------------------------------------------------------------
     # Introspection
