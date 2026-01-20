@@ -5,7 +5,7 @@ import pytest
 
 from ptychography.core.wave import Wave
 from ptychography.core.measurement import Measurement
-from ptychography.core.decorator import model
+from ptychography.core.decorator import ptycho_model
 
 
 # ------------------------------------------------------------
@@ -62,7 +62,7 @@ def test_model_decorator_builds_graph_and_model():
 
     ctx = DummyContext()
 
-    @model
+    @ptycho_model
     def simple_model(ctx):
         x = Wave(label="x")
         y = Identity() @ x
@@ -91,7 +91,7 @@ def test_forward_execution_propagates_data():
 
     ctx = DummyContext()
 
-    @model
+    @ptycho_model
     def simple_model(ctx):
         x = Wave(label="x")
         y = Identity() @ x
@@ -123,7 +123,7 @@ def test_multiple_measurements_and_order():
 
     ctx = DummyContext()
 
-    @model
+    @ptycho_model
     def multi_measurement_model(ctx):
         x = Wave(label="x")
         y = Identity() @ x
@@ -150,7 +150,7 @@ def test_model_function_must_not_return_value():
 
     ctx = DummyContext()
 
-    @model
+    @ptycho_model
     def bad_model(ctx):
         x = Wave(label="x")
         return x  # illegal
@@ -167,7 +167,7 @@ def test_forward_without_data_raises():
 
     ctx = DummyContext()
 
-    @model
+    @ptycho_model
     def simple_model(ctx):
         x = Wave(label="x")
         y = Identity() @ x

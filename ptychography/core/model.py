@@ -1,5 +1,3 @@
-# ptychography/core/model.py
-
 class PtychoModel:
     """
     Compiled ptychography forward model.

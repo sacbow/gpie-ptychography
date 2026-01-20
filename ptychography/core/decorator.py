@@ -1,11 +1,9 @@
-# ptychography/core/decorators.py
-
 from functools import wraps
 from ptychography.core.graph import Graph
 from ptychography.core.model import PtychoModel
 
 
-def model(func):
+def ptycho_model(func):
     """
     Decorator for defining a ptychography forward model.
 
@@ -23,7 +21,7 @@ def model(func):
         # Explicit return from model function is not allowed
         if result is not None:
             raise RuntimeError(
-                "@model-decorated functions must not return a value."
+                "@ptycho_model-decorated functions must not return a value."
             )
 
         graph.build()

@@ -1,5 +1,3 @@
-# ptychography/core/graph.py
-
 from __future__ import annotations
 
 import contextlib
@@ -124,20 +122,6 @@ class Graph:
             self._propagators.append(propagator)
         self._built = False
 
-    def add_nodes(self, nodes: Iterable[object]) -> None:
-        """
-        Bulk registration helper.
-        """
-        for node in nodes:
-            if isinstance(node, Measurement):
-                self.add_measurement(node)
-            elif isinstance(node, Propagator):
-                self.add_propagator(node)
-            elif isinstance(node, Wave):
-                self.register_wave(node)
-            else:
-                raise TypeError(f"Unsupported node type: {type(node)}")
-
     # ------------------------------------------------------------------
     # Graph building (measurement-rooted upstream traversal)
     # ------------------------------------------------------------------
@@ -227,21 +211,12 @@ class Graph:
     # Execution
     # ------------------------------------------------------------------
 
-    def forward(self, *, auto_build: bool = True) -> None:
+    def forward(self) -> None:
         """
         Execute forward computation for the entire graph.
-
-        Parameters
-        ----------
-        auto_build : bool
-            If True, calls build() automatically if the graph is not built.
-            If False, raises RuntimeError when build() has not been called.
         """
         if not self._built:
-            if auto_build:
-                self.build()
-            else:
-                raise RuntimeError("Graph.forward(): graph is not built. Call build() first.")
+            raise RuntimeError("Graph.forward(): graph is not built. Call build() first.")
 
         for prop in self._propagators_sorted:
             prop.forward()
