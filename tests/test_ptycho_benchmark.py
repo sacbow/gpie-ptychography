@@ -165,7 +165,7 @@ def test_ptycho_poisson_measurement_runs(
         exit_wave = obj_sliced * probe_rep
         intensity = abs(fft2(exit_wave)) ** 2
 
-        PoissonMeasurement() << intensity
+        PoissonMeasurement() << intensity * 1000.0
 
     pmodel = model(ctx)
     pmodel.set_wave("object", obj)

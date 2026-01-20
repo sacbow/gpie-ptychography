@@ -26,7 +26,7 @@ def _broadcastable(shape_a, shape_b) -> bool:
 # Arithmetic propagators
 # ---------------------------------------------------------------------
 
-class Add(Propagator):
+class Binary(Propagator):
     """
     Elementwise addition: y = x1 + x2
     """
@@ -44,28 +44,44 @@ class Add(Propagator):
             raise ValueError(f"Add: shapes {s0} and {s1} are not broadcastable.")
 
     def compute(self, x1: ArrayLike, x2: ArrayLike) -> ArrayLike:
+        raise NotImplementedError
+
+
+
+class Add(Binary):
+    """
+    Elementwise addition: y = x1 + x2
+    """
+    def compute(self, x1: ArrayLike, x2: ArrayLike) -> ArrayLike:
         return x1 + x2
 
 
-class Multiply(Propagator):
+class Subtract(Binary):
+    """
+    Elementwise subtraction: y = x1 - x2
+    """
+    def compute(self, x1: ArrayLike, x2: ArrayLike) -> ArrayLike:
+        return x1 - x2
+    
+
+
+class Multiply(Binary):
     """
     Elementwise multiplication: y = x1 * x2
     """
-
-    def check_inputs(self):
-        if len(self.inputs) != 2:
-            raise RuntimeError("Multiply expects exactly two input waves.")
-
-        s0 = self.inputs[0].shape
-        s1 = self.inputs[1].shape
-        if s0 is None or s1 is None:
-            return
-
-        if not _broadcastable(s0, s1):
-            raise ValueError(f"Multiply: shapes {s0} and {s1} are not broadcastable.")
-
     def compute(self, x1: ArrayLike, x2: ArrayLike) -> ArrayLike:
         return x1 * x2
+
+
+class Divide(Binary):
+    """
+    Elementwise division: y = x1 / x2
+    """
+    def compute(self, x, y):
+        backend = xp()
+        return backend.divide(x, y)
+
+
 
 
 class Abs(Propagator):

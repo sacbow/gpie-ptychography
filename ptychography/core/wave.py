@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Optional, Tuple
 
 from ptychography.utils.types import ArrayLike
+from ptychography.backend.array import xp, to_numpy
 
 
 class Wave:
@@ -80,8 +81,13 @@ class Wave:
     def set_data(self, data: ArrayLike) -> None:
         """
         Attach concrete array data to this wave.
+
+        Notes
+        -----
+        - Data is normalized to the current array backend (xp).
+        - Users are expected to pass NumPy arrays.
         """
-        self._data = data
+        self._data = xp().asarray(data)
     
     def clear_data(self) -> None:
         """
@@ -119,6 +125,9 @@ class Wave:
         Number of dimensions of underlying array, if present.
         """
         return None if self._data is None else self._data.ndim
+    
+    def numpy(self):
+        return to_numpy(self.data)
 
     # ------------------------------------------------------------------
     # Representation
@@ -132,24 +141,60 @@ class Wave:
     # ----------------------------
     # Operator overloading
     # ----------------------------
+    @staticmethod
+    def _const(other) -> "Wave":
+        w = Wave(label=None, generation=0)
+        w.set_data(xp().asarray(other))
+        return w
 
     def __add__(self, other):
-        if isinstance(other, Wave):
-            from .ops import Add
-            return Add() @ (self, other)
-        return NotImplemented
+        from .ops import Add
+        if not isinstance(other, Wave):
+            other = Wave._const(other)
+        return Add() @ (self, other)
 
     def __radd__(self, other):
-        return self.__add__(other)
+        from .ops import Add
+        if not isinstance(other, Wave):
+            other = Wave._const(other)
+        return Add() @ (other, self)
 
     def __mul__(self, other):
-        if isinstance(other, Wave):
-            from .ops import Multiply
-            return Multiply() @ (self, other)
-        return NotImplemented
+        from .ops import Multiply
+        if not isinstance(other, Wave):
+            other = Wave._const(other)
+        return Multiply() @ (self, other)
 
     def __rmul__(self, other):
-        return self.__mul__(other)
+        from .ops import Multiply
+        if not isinstance(other, Wave):
+            other = Wave._const(other)
+        return Multiply() @ (other, self)
+
+    def __sub__(self, other):
+        from .ops import Subtract
+        if not isinstance(other, Wave):
+            other = Wave._const(other)
+        return Subtract() @ (self, other)
+
+    def __rsub__(self, other):
+        from .ops import Subtract
+        if not isinstance(other, Wave):
+            other = Wave._const(other)
+        return Subtract() @ (other, self)
+
+    def __truediv__(self, other):
+        from .ops import Divide
+        if not isinstance(other, Wave):
+            other = Wave._const(other)
+        return Divide() @ (self, other)
+
+    def __rtruediv__(self, other):
+        from .ops import Divide
+        if not isinstance(other, Wave):
+            other = Wave._const(other)
+        return Divide() @ (other, self)
+
 
     def __abs__(self):
         from .ops import Abs
@@ -160,3 +205,5 @@ class Wave:
             from .ops import Power
             return Power(power) @ self
         return NotImplemented
+
+

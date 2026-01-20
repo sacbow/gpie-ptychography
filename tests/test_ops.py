@@ -5,6 +5,8 @@ from ptychography.core.wave import Wave
 from ptychography.core.propagator import Propagator
 from ptychography.core.ops import Add, Multiply, Abs, Power, FFT2
 from ptychography.core.shortcuts import fft2
+from ptychography.backend.array import set_backend
+
 
 
 # ------------------------------------------------------------
@@ -76,33 +78,6 @@ def test_fft2_shortcut():
     assert out.generation == 8
 
 
-# ------------------------------------------------------------
-# ndarray mixing should fail cleanly
-# ------------------------------------------------------------
-
-def test_wave_add_numpy_array_raises():
-    w = Wave(label="w")
-
-    arr = np.ones((4, 4))
-
-    with pytest.raises(TypeError):
-        _ = w + arr
-
-
-def test_numpy_array_add_wave_raises():
-    w = Wave(label="w")
-    arr = np.ones((4, 4))
-
-    with pytest.raises(TypeError):
-        _ = arr + w
-
-
-def test_wave_mul_scalar_not_supported():
-    w = Wave(label="w")
-
-    with pytest.raises(TypeError):
-        _ = w * 2
-
 
 # ------------------------------------------------------------
 # Chained expressions
@@ -128,3 +103,142 @@ def test_chained_expression_generations():
     assert isinstance(p_fft, FFT2)
     assert isinstance(p_pow, Power)
     assert isinstance(p_abs, Abs)
+
+# ------------------------------------------------------------
+# Wave <-> scalar / ndarray binary ops
+# ------------------------------------------------------------
+
+def test_add_wave_and_scalar():
+    w = Wave(label="w", generation=3)
+
+    out = w + 2.0
+
+    assert isinstance(out.parent, Add)
+    lhs, rhs = out.parent.inputs
+
+    assert lhs is w
+    assert isinstance(rhs, Wave)
+    assert rhs.generation == 0
+    np.testing.assert_allclose(rhs.numpy(), 2.0)
+
+    assert out.generation == 4
+
+
+def test_add_scalar_and_wave():
+    w = Wave(label="w", generation=3)
+
+    out = 2.0 + w
+
+    assert isinstance(out.parent, Add)
+    lhs, rhs = out.parent.inputs
+
+    assert rhs is w
+    assert isinstance(lhs, Wave)
+    assert lhs.generation == 0
+    np.testing.assert_allclose(lhs.numpy(), 2.0)
+
+    assert out.generation == 4
+
+
+def test_multiply_wave_and_scalar():
+    w = Wave(label="w", generation=5)
+
+    out = w * 10.0
+
+    assert isinstance(out.parent, Multiply)
+    lhs, rhs = out.parent.inputs
+
+    assert lhs is w
+    assert isinstance(rhs, Wave)
+    assert rhs.generation == 0
+    np.testing.assert_allclose(rhs.numpy(), 10.0)
+
+    assert out.generation == 6
+
+
+def test_multiply_scalar_and_wave():
+    w = Wave(label="w", generation=5)
+
+    out = 10.0 * w
+
+    assert isinstance(out.parent, Multiply)
+    lhs, rhs = out.parent.inputs
+
+    assert rhs is w
+    assert isinstance(lhs, Wave)
+    assert lhs.generation == 0
+    np.testing.assert_allclose(lhs.numpy(), 10.0)
+
+    assert out.generation == 6
+
+
+def test_add_wave_and_ndarray():
+    w = Wave(label="w", generation=2)
+    arr = np.ones((4, 4), dtype=np.float32)
+
+    out = w + arr
+
+    assert isinstance(out.parent, Add)
+    lhs, rhs = out.parent.inputs
+
+    assert lhs is w
+    assert isinstance(rhs, Wave)
+    assert rhs.generation == 0
+    np.testing.assert_allclose(rhs.numpy(), arr)
+
+    assert out.generation == 3
+
+
+# ------------------------------------------------------------
+# Subtract / Divide (once implemented)
+# ------------------------------------------------------------
+
+def test_subtract_wave_and_scalar():
+    from ptychography.core.ops import Subtract
+
+    w = Wave(label="w", generation=4)
+
+    out = w - 1.5
+
+    assert isinstance(out.parent, Subtract)
+    lhs, rhs = out.parent.inputs
+
+    assert lhs is w
+    assert isinstance(rhs, Wave)
+    np.testing.assert_allclose(rhs.numpy(), 1.5)
+
+    assert out.generation == 5
+
+
+def test_divide_wave_and_scalar():
+    from ptychography.core.ops import Divide
+
+    w = Wave(label="w", generation=6)
+
+    out = w / 2.0
+
+    assert isinstance(out.parent, Divide)
+    lhs, rhs = out.parent.inputs
+
+    assert lhs is w
+    assert isinstance(rhs, Wave)
+    np.testing.assert_allclose(rhs.numpy(), 2.0)
+
+    assert out.generation == 7
+
+
+def test_divide_scalar_and_wave():
+    from ptychography.core.ops import Divide
+
+    w = Wave(label="w", generation=6)
+
+    out = 2.0 / w
+
+    assert isinstance(out.parent, Divide)
+    lhs, rhs = out.parent.inputs
+
+    assert rhs is w
+    assert isinstance(lhs, Wave)
+    np.testing.assert_allclose(lhs.numpy(), 2.0)
+
+    assert out.generation == 7
