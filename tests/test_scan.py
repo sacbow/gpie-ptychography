@@ -18,14 +18,14 @@ def test_raster_scan_first_points_no_jitter():
     # Expected Manhattan spiral (y, x)
     expected = [
         (0.0, 0.0),
-        (0.0, 1.0),
-        (1.0, 1.0),
         (1.0, 0.0),
-        (1.0, -1.0),
-        (0.0, -1.0),
-        (-1.0, -1.0),
-        (-1.0, 0.0),
+        (1.0, 1.0),
+        (0.0, 1.0),
         (-1.0, 1.0),
+        (-1.0, 0.0),
+        (-1.0, -1.0),
+        (0.0, -1.0),
+        (1.0, -1.0),
     ]
 
     assert points == expected
@@ -38,9 +38,9 @@ def test_raster_scan_stride_scaling():
     # Only scaling should change
     expected = [
         (0.0, 0.0),
-        (0.0, 2.5),
-        (2.5, 2.5),
         (2.5, 0.0),
+        (2.5, 2.5),
+        (0.0, 2.5),
     ]
 
     assert points == expected

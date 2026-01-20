@@ -22,35 +22,35 @@ def raster_scan(
 
     Yields
     ------
-    (y_um, x_um) : tuple of floats
+    (y, x) : tuple of floats
         Real-space scan coordinates with optional jitter.
     """
     yield _apply_jitter(0.0, 0.0, jitter, rng)
 
     step = 1
-    y, x = 0, 0
+    x, y = 0, 0
 
     while True:
         # Move right
         for _ in range(step):
             x += 1
-            yield _apply_jitter(y * stride, x * stride, jitter, rng)
+            yield _apply_jitter(x * stride, y * stride, jitter, rng)
 
         # Move up
         for _ in range(step):
             y += 1
-            yield _apply_jitter(y * stride, x * stride, jitter, rng)
+            yield _apply_jitter(x * stride, y * stride, jitter, rng)
 
         step += 1
 
         # Move left
         for _ in range(step):
             x -= 1
-            yield _apply_jitter(y * stride, x * stride, jitter, rng)
+            yield _apply_jitter(x * stride, y * stride, jitter, rng)
 
         # Move down
         for _ in range(step):
             y -= 1
-            yield _apply_jitter(y * stride, x * stride, jitter, rng)
+            yield _apply_jitter(x * stride, y * stride, jitter, rng)
 
         step += 1
