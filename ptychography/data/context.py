@@ -1,7 +1,6 @@
-# ptychography/data/context.py
-
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, field
 from typing import Tuple, List
 
@@ -18,6 +17,13 @@ class PtychoContext:
     The context is immutable and fully validated at initialization time.
     All derived quantities (slice indices, sub-pixel shifts) are computed
     eagerly and cached.
+
+    Design policy
+    -------------
+    - Scan positions that lead to out-of-bounds probe footprints are
+      skipped by default.
+    - A summary warning is emitted once if any scan positions are skipped.
+    - Strict behavior can be enforced by setting skip_out_of_bounds=False.
     """
 
     # ------------------------------------------------------------------
@@ -33,7 +39,8 @@ class PtychoContext:
     scan_positions[i] = (x, y)
       - +x : right
       - +y : up
-    Units are arbitrary but must be consistent with pixel_pitch.
+
+    Units must be consistent with pixel_pitch.
     """
 
     object_shape: Tuple[int, int]
@@ -49,7 +56,17 @@ class PtychoContext:
     pixel_pitch: float
     """
     Real-space length corresponding to one pixel.
-    (e.g. nm / pixel, um / pixel)
+    """
+
+    skip_out_of_bounds: bool = True
+    """
+    Whether to skip scan positions whose probe footprint exceeds
+    object boundaries.
+    """
+
+    warn_on_skip: bool = True
+    """
+    Whether to emit a warning when out-of-bounds scan positions are skipped.
     """
 
     # ------------------------------------------------------------------
@@ -70,8 +87,7 @@ class PtychoContext:
         Validate inputs and compute all derived quantities eagerly.
         """
         self._validate()
-        self._build_indices()
-        self._build_slices()
+        self._build_geometry()
 
     # ------------------------------------------------------------------
     # Public properties
@@ -80,14 +96,14 @@ class PtychoContext:
     @property
     def n_scan(self) -> int:
         """
-        Number of scan positions.
+        Number of valid scan positions after filtering.
         """
-        return len(self.scan_positions)
+        return len(self._slice_indices)
 
     @property
     def slice_indices(self) -> List[Tuple[slice, slice]]:
         """
-        Precomputed object slice indices for each scan position.
+        Precomputed object slice indices for each valid scan position.
         """
         return self._slice_indices
 
@@ -133,25 +149,42 @@ class PtychoContext:
         center_y = (ny - 1) / 2.0
         center_x = (nx - 1) / 2.0
 
+        # NOTE:
+        #   y_real (upward) maps to decreasing row index
+        #   x_real (rightward) maps to increasing column index
         y_idx = center_y - y_real / self.pixel_pitch
         x_idx = center_x + x_real / self.pixel_pitch
 
         return y_idx, x_idx
 
     # ------------------------------------------------------------------
-    # Derived quantity builders
+    # Geometry builder
     # ------------------------------------------------------------------
 
-    def _build_indices(self) -> None:
+    def _build_geometry(self) -> None:
         """
-        Compute and cache:
-          - floating-point indices
-          - integer indices
-          - sub-pixel shifts
+        Compute and cache all geometry-related derived quantities.
+
+        This method performs the following steps atomically per scan position:
+          - real -> float index conversion
+          - integer index rounding
+          - slice construction
+          - out-of-bounds validation
+
+        Invalid scan positions are skipped or rejected according to policy.
         """
         float_indices: List[Tuple[float, float]] = []
         int_indices: List[Tuple[int, int]] = []
         shifts: List[Tuple[float, float]] = []
+        slices: List[Tuple[slice, slice]] = []
+
+        skipped = 0
+
+        ny_probe, nx_probe = self.probe_shape
+        ny_obj, nx_obj = self.object_shape
+
+        half_y = ny_probe // 2
+        half_x = nx_probe // 2
 
         for pos in self.scan_positions:
             y_f, x_f = self._real_to_float_index(pos)
@@ -162,42 +195,40 @@ class PtychoContext:
             dy = y_f - iy
             dx = x_f - ix
 
+            sy = slice(iy - half_y, iy - half_y + ny_probe)
+            sx = slice(ix - half_x, ix - half_x + nx_probe)
+
+            out_of_bounds = (
+                sy.start < 0
+                or sx.start < 0
+                or sy.stop > ny_obj
+                or sx.stop > nx_obj
+            )
+
+            if out_of_bounds:
+                skipped += 1
+                if not self.skip_out_of_bounds:
+                    raise ValueError(
+                        f"Scan position {pos} leads to out-of-bounds slice: "
+                        f"y={sy}, x={sx}, object_shape={self.object_shape}"
+                    )
+                continue
+
             float_indices.append((y_f, x_f))
             int_indices.append((iy, ix))
             shifts.append((dy, dx))
+            slices.append((sy, sx))
+
+        if skipped > 0 and self.skip_out_of_bounds and self.warn_on_skip:
+            warnings.warn(
+                f"{skipped} / {len(self.scan_positions)} scan positions were skipped "
+                f"because the probe footprint exceeded object boundaries.",
+                UserWarning,
+            )
 
         self._float_indices = float_indices
         self._int_indices = int_indices
         self._subpixel_shifts = shifts
-
-    def _build_slices(self) -> None:
-        """
-        Compute and cache object slice indices for each scan position.
-        """
-        ny_probe, nx_probe = self.probe_shape
-        ny_obj, nx_obj = self.object_shape
-
-        half_y = ny_probe // 2
-        half_x = nx_probe // 2
-
-        slices: List[Tuple[slice, slice]] = []
-
-        for (iy, ix), pos in zip(self._int_indices, self.scan_positions):
-            sy = slice(iy - half_y, iy - half_y + ny_probe)
-            sx = slice(ix - half_x, ix - half_x + nx_probe)
-
-            if (
-                sy.start < 0 or sx.start < 0
-                or sy.stop > ny_obj
-                or sx.stop > nx_obj
-            ):
-                raise ValueError(
-                    f"Scan position {pos} leads to out-of-bounds slice: "
-                    f"y={sy}, x={sx}, object_shape={self.object_shape}"
-                )
-
-            slices.append((sy, sx))
-
         self._slice_indices = slices
 
     # ------------------------------------------------------------------
@@ -247,6 +278,7 @@ class PtychoContext:
         return (
             "PtychoContext(\n"
             f"  n_scan       = {self.n_scan}\n"
+            f"  requested    = {len(self.scan_positions)}\n"
             f"  object_shape = {self.object_shape}\n"
             f"  probe_shape  = {self.probe_shape}\n"
             f"  pixel_pitch  = {self.pixel_pitch}\n"
