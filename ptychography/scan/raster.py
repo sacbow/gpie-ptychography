@@ -22,7 +22,7 @@ def raster_scan(
 
     Yields
     ------
-    (y, x) : tuple of floats
+    (x, y) : tuple of floats
         Real-space scan coordinates with optional jitter.
     """
     yield _apply_jitter(0.0, 0.0, jitter, rng)

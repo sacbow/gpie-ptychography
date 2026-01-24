@@ -25,7 +25,7 @@ def fermat_spiral(
 
     Yields
     ------
-    (y_um, x_um) : tuple of floats
+    (x, y) : tuple of floats
         Real-space coordinates along Fermat spiral, with optional jitter.
     
     References
@@ -41,5 +41,5 @@ def fermat_spiral(
         theta = i * golden_angle_rad
         x = r * math.cos(theta)
         y = r * math.sin(theta)
-        yield _apply_jitter(y, x, jitter, rng)
+        yield _apply_jitter(x, y, jitter, rng)
         i += 1
