@@ -1,5 +1,3 @@
-# ptychography/core/wave.py
-
 from __future__ import annotations
 from typing import Optional, Tuple
 
@@ -205,5 +203,3 @@ class Wave:
             from .ops import Power
             return Power(power) @ self
         return NotImplemented
-
-
