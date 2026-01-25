@@ -58,13 +58,13 @@ def make_smooth_random_phase(
 def generate_probe(
     shape: Tuple[int, int],
     pixel_size: float = 1.0,
-    aperture_radius: float = 0.5,
+    aperture_radius: float = 0.1,
     *,
     kind: Literal["circular", "square"] = "circular",
     space: Literal["fourier", "real"] = "real",
-    smooth_edge_sigma: float = 0.01,
+    smooth_edge_sigma: float = 0.05,
     random_phase: bool = False,
-    cutoff_radius: float = 0.01,
+    cutoff_radius: float = 0.05,
     rng=None,
 ) -> xp().ndarray:
     """
@@ -78,7 +78,6 @@ def generate_probe(
         Physical pixel size.
     aperture_radius : float, optional
         Aperture radius or half-width (depending on `kind`).
-        If None, defaults to half of the probe size in pixels.
     kind : {"circular", "square"}, optional
         Aperture shape. Default: "circular".
     space : {"fourier", "real"}, optional
