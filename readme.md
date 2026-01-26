@@ -5,68 +5,90 @@ support **demonstrations and benchmarks of ptychographic reconstruction using gP
 
 The primary goal of this repository is to provide:
 - reproducible forward ptychography simulations,
-- clean experiment definitions,
-- and minimal infrastructure needed to couple physical ptychography models to **gPIE-based inference**.
+- clean separation between experimental context and computation graph structure,
+- and a flexible testbed for developing and benchmarking ptychographic reconstruction algorithms.
 
-As a secondary goal, this project provides a small **domain-specific language (DSL)**
-for constructing ptychography forward models as explicit computation graphs.
+This project is developed as a companion to gPIE, but it is designed to be useful independently as a forward-modeling and data-generation tool.
 
 ---
 
 ## Scope and Philosophy
 
-This project is **not** a standalone ptychography solver.
+This project is not intended to be a full-featured ptychography solver or a turnkey simulation package for experimental users.
 
 Instead, it focuses on:
-- defining forward ptychography models,
+- explicitly defining forward ptychography models,
 - generating diffraction data under controlled conditions,
-- and serving as a testbed for message-passing–based reconstruction algorithms implemented in gPIE.
-
-The design emphasizes clarity and extensibility over performance.
+- and serving as an infrastructure layer for algorithmic research on phase retrieval.
 
 ---
 
 ## Core Concepts
 
-Ptychography forward models are represented as a **forward-only computation graph** consisting of:
+A ptychography experiment is represented by separating:
 
-- **Wave**: complex-valued wavefields (ndarray-like objects)
-- **Propagator**: deterministic operators (slice, FFT, multiplication, etc.)
-- **Measurement** (to be added): physical measurement models (e.g., Poisson intensity)
+### 1. Experimental context
+A `PtychoContext` object encapsulates all scan- and geometry-dependent information:
+- scan positions
+- object and probe shapes
+- pixel pitch and coordinate conventions
 
-This structure mirrors the implicit forward/backward structure used in standard algorithms
-(ePIE, rPIE), while keeping the forward model explicit and inspectable.
+This context defines where and how the experiment is performed.
+
+### 2. Forward computation graph
+The forward model itself is expressed as a forward-only computation graph composed of:
+- `Wave`
+    Complex-valued wavefields (ndarray-like symbolic variables)
+- `Propagator`
+    Deterministic operators such as slicing, multiplication, and FFT
+- `Measurement`
+    Physical measurement models (e.g. Poisson intensity measurements)
+
+The graph is constructed using a small Python-based DSL and then executed explicitly.
+This makes the forward model inspectable, debuggable, and easy to modify.
+
+An introductory notebook demonstrating a simulation workflow is provided in the `examples/user_guide` directory.
 
 ---
 
 ## Project Structure
+```
 ptychography/
-├── backend/ # Array / FFT backend abstraction (NumPy / CuPy)
-│ ├── array.py
-│ ├── fft.py
-│ └── rng.py
+├── backend/        # Array / FFT / RNG backend abstraction (NumPy / CuPy)
+│   ├── array.py
+│   ├── fft.py
+│   └── rng.py
 │
-├── core/ # Forward computation graph primitives
-│ ├── wave.py # Wave node (ndarray-like graph variable)
-│ ├── propagator.py # Propagator base class
-│ ├── ops.py # Arithmetic, FFT, slice propagators
-│ └── shortcuts.py # NumPy-like DSL shortcuts (e.g. fft2)
+├── core/           # Forward computation graph primitives
+│   ├── wave.py         # Wave node (symbolic ndarray)
+│   ├── propagator.py   # Propagator base class
+│   ├── ops.py          # Arithmetic and FFT propagators
+│   ├── slice.py        # Object slicing operator
+│   ├── replicate.py   # Wave replication operator
+│   ├── shortcuts.py   # NumPy-like DSL shortcuts (fft2, etc.)
+│   ├── graph.py        # Graph construction and execution
+│   └── model.py        # PtychoModel (graph + context binding)
 │
-├── data/ # Ptychography experiment data containers
-│ ├── diffraction.py # DiffractionData (intensity + position)
-│ └── ptychography.py # Ptychography experiment manager
+├── data/           # Data containers
+│   ├── context.py      # PtychoContext
+│   └── diffraction.py  # DiffractionData
 │
-├── utils/
-│ └── types.py # Shared typing utilities (ArrayLike, etc.)
+├── optics/         # Optics-related utilities
+│   ├── aperture.py
+│   └── probe.py
 │
-├── tests/ # Unit tests
-│ ├── test_wave_and_propagator.py
-│ ├── test_ops.py
-│ ├── test_diffraction_data.py
-│ └── test_ptychography.py
+├── scan/           # Scan pattern generators
+│   ├── raster.py
+│   ├── fermat.py
+│   └── utils.py
 │
-├── README.md
-└── pyproject.toml
+├── visualize/      # Visualization helpers (matplotlib-based)
+│
+├── examples/       # Tutorials and demonstration notebooks
+│
+├── tests/          # Unit tests
+└── README.md
+```
 
 ---
 
