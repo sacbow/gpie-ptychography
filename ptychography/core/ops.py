@@ -124,7 +124,11 @@ class FFT2(Propagator):
     """
     2D FFT propagator.
 
-    API intentionally mirrors numpy.fft.fft2.
+    By default, a centered FFT is applied:
+        fftshift(fft2(ifftshift(x)))
+
+    This matches the standard convention in ptychography and
+    coherent diffraction imaging.
     """
 
     def __init__(
@@ -132,12 +136,15 @@ class FFT2(Propagator):
         s: Optional[Tuple[int, int]] = None,
         axes: Tuple[int, int] = (-2, -1),
         norm: Optional[str] = None,
+        *,
+        centered: bool = True,
         name: Optional[str] = None,
     ):
         super().__init__(name=name or "FFT2")
         self.s = s
         self.axes = axes
-        self.norm = norm
+        self.norm = "ortho"
+        self.centered = centered
 
     def check_inputs(self):
         if len(self.inputs) != 1:
@@ -149,12 +156,26 @@ class FFT2(Propagator):
 
     def compute(self, x: ArrayLike) -> ArrayLike:
         backend = xp()
-        return backend.fft.fft2(
-            x,
-            s=self.s,
-            axes=self.axes,
-            norm=self.norm,
-        )
+        fft2 = backend.fft.fft2
+        fftshift = backend.fft.fftshift
+        ifftshift = backend.fft.ifftshift
+
+        if self.centered:
+            x = ifftshift(x, axes=self.axes)
+            y = fft2(
+                x,
+                s=self.s,
+                axes=self.axes,
+                norm=self.norm,
+            )
+            return fftshift(y, axes=self.axes)
+        else:
+            return fft2(
+                x,
+                s=self.s,
+                axes=self.axes,
+                norm=self.norm,
+            )
 
 
 # ---------------------------------------------------------------------

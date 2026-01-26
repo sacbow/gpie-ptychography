@@ -145,7 +145,7 @@ def test_fft2_forward_matches_numpy():
     out = FFT2() @ w
     y = run_forward(out)
 
-    ref = np.fft.fft2(x)
+    ref = np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(x), norm = "ortho"))
     assert np.allclose(y, ref)
 
 

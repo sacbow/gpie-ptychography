@@ -125,7 +125,7 @@ def test_ptycho_identity_measurement_matches_numpy(
     expected = []
     for (sy, sx) in ctx.slice_indices:
         patch = obj[sy, sx] * probe
-        ref = np.abs(np.fft.fft2(patch)) ** 2
+        ref = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(patch), norm = "ortho"))) ** 2
         expected.append(ref.astype(np.float32, copy=False))
     expected = np.stack(expected, axis=0)
 

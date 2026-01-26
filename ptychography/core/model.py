@@ -96,3 +96,15 @@ class PtychoModel:
                 diffraction_items.append(item)
 
         return diffraction_items
+    
+    def __repr__(self) -> str:
+        return (
+            "PtychoModel(\n"
+            "  context = "
+            + repr(self._context).replace("\n", "\n  ")
+            + ",\n"
+            "  graph = "
+            + repr(self._graph).replace("\n", "\n  ")
+            + "\n"
+            ")"
+        )
