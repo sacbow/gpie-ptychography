@@ -3,7 +3,7 @@ import pytest
 
 from ptychography.backend.array import set_backend
 from ptychography.core.wave import Wave
-from ptychography.core.ops import Add, Multiply, Abs, Power, FFT2, Slice
+from ptychography.core.ops import Add, Multiply, Abs, Power, FFT2
 
 
 # ---------------------------------------------------------------------
@@ -154,34 +154,4 @@ def test_fft2_ndim_check():
 
     out = FFT2() @ w
     with pytest.raises(ValueError):
-        out.parent.forward()
-
-
-# ---------------------------------------------------------------------
-# Slice
-# ---------------------------------------------------------------------
-
-def test_slice_forward():
-    x = np.arange(16).reshape(4, 4)
-    w = make_wave(x)
-
-    indices = [
-        (slice(0, 2), slice(0, 2)),
-        (slice(2, 4), slice(2, 4)),
-    ]
-
-    out = Slice(indices) @ w
-    y = run_forward(out)
-
-    assert y.shape == (2, 2, 2)
-    assert np.allclose(y[0], x[0:2, 0:2])
-    assert np.allclose(y[1], x[2:4, 2:4])
-
-
-def test_slice_wrong_input_count_raises():
-    a = make_wave(np.ones((4, 4)))
-    b = make_wave(np.ones((4, 4)))
-
-    out = Slice([]) @ (a, b)
-    with pytest.raises(RuntimeError):
         out.parent.forward()

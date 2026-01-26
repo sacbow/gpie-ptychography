@@ -176,28 +176,3 @@ class FFT2(Propagator):
                 axes=self.axes,
                 norm=self.norm,
             )
-
-
-# ---------------------------------------------------------------------
-# Slice propagator
-# ---------------------------------------------------------------------
-
-class Slice(Propagator):
-    """
-    Slice propagator for ptychography.
-
-    Extracts object patches according to precomputed indices.
-    """
-
-    def __init__(self, indices: Sequence[Tuple[slice, slice]]):
-        super().__init__(name="Slice")
-        self.indices = list(indices)
-
-    def check_inputs(self):
-        if len(self.inputs) != 1:
-            raise RuntimeError("Slice expects exactly one input wave.")
-
-    def compute(self, x: ArrayLike) -> ArrayLike:
-        backend = xp()
-        patches = [x[sy, sx] for (sy, sx) in self.indices]
-        return backend.stack(patches, axis=0)
