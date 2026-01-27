@@ -1,4 +1,6 @@
-from .array import xp
+# ptychography/backend/rng.py
+
+from ptychography.backend.array import xp
 import warnings
 
 def get_rng(seed=None):
