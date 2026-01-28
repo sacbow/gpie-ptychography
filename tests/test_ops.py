@@ -5,7 +5,7 @@ from ptychography.core.wave import Wave
 from ptychography.core.propagator import Propagator
 from ptychography.core.ops import Add, Multiply, Abs, Power, FFT2
 from ptychography.core.shortcuts import fft2
-from ptychography.backend.array import set_backend
+from backend.array import set_backend
 
 
 

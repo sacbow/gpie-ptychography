@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from ptychography.backend.array import xp
+from backend.array import xp
 
 
 def global_max_normalize(

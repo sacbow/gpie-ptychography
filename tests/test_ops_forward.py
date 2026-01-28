@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from ptychography.backend.array import set_backend
+from backend.array import set_backend
 from ptychography.core.wave import Wave
 from ptychography.core.ops import Add, Multiply, Abs, Power, FFT2
 

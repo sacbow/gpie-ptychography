@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from ptychography.backend.array import xp
+from backend.array import xp
 from ptychography.optics.aperture import make_aperture
 from ptychography.optics.probe import (
     make_smooth_random_phase,

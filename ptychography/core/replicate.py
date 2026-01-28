@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Any
 
 from ptychography.core.propagator import Propagator
-from ptychography.backend.array import xp
+from backend.array import xp
 
 
 class Replicate(Propagator):

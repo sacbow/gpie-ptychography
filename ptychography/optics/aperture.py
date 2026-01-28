@@ -1,5 +1,5 @@
 from typing import Tuple, Literal
-from ptychography.backend.array import xp
+from backend.array import xp
 
 
 def make_aperture(

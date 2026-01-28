@@ -6,7 +6,7 @@ from ptychography.core.wave import Wave
 from ptychography.core.decorator import ptycho_model
 from ptychography.core.measurement import Measurement
 from ptychography.core.shortcuts import get_slice, replicate
-from ptychography.backend.array import xp
+from backend.array import xp
 
 
 # ------------------------------------------------------------

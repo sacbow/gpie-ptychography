@@ -2,8 +2,8 @@ from __future__ import annotations
 from typing import Optional, Any
 
 from ptychography.core.wave import Wave
-from ptychography.backend.array import xp
-from ptychography.backend.rng import get_rng
+from backend.array import xp
+from backend.rng import get_rng
 
 
 class Measurement:

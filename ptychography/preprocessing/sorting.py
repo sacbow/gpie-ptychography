@@ -2,7 +2,7 @@ from typing import Callable, List, Optional, Any
 import numpy as np
 
 from ptychography.data.diffraction import DiffractionData
-from ptychography.backend.rng import get_rng
+from backend.rng import get_rng
 
 
 def reorder_diffraction_data(

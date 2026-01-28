@@ -3,7 +3,7 @@
 import pytest
 import numpy as np
 
-from ptychography.backend.array import set_backend, xp
+from backend.array import set_backend, xp
 from ptychography.data.diffraction import DiffractionData
 
 

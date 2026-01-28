@@ -1,6 +1,6 @@
 from typing import Tuple, Literal, Optional
-from ptychography.backend.array import xp
-from ptychography.backend.rng import get_rng, normal
+from backend.array import xp
+from backend.rng import get_rng, normal
 from .aperture import make_aperture
 
 

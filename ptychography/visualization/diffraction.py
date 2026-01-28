@@ -1,7 +1,7 @@
 # visualize/diffraction.py
 import numpy as np
 from ptychography.visualization._mpl import require_matplotlib
-from ptychography.backend.array import to_numpy
+from backend.array import to_numpy
 
 def plot_diffraction_grid(
     diffraction_list,

@@ -1,7 +1,7 @@
 from typing import Callable, List, Optional, Any
 
 from ptychography.data.diffraction import DiffractionData
-from ptychography.backend.array import to_numpy
+from backend.array import to_numpy
 
 from .dataset import PreprocessedDiffractionDataset
 from .sorting import reorder_diffraction_data
@@ -70,7 +70,7 @@ def preprocess_diffraction_data(
             base_variance=base_variance,
         )
     else:
-        from ptychography.backend.array import xp
+        from backend.array import xp
         xp_ = xp()
         amplitude_array = xp_.stack(amplitudes, axis=0)
         variance = base_variance

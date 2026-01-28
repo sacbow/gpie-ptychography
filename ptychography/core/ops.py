@@ -5,7 +5,7 @@ from typing import Tuple, Optional, Sequence
 
 from ptychography.core.propagator import Propagator
 from ptychography.utils.types import ArrayLike
-from ptychography.backend.array import xp
+from backend.array import xp
 
 
 # ---------------------------------------------------------------------

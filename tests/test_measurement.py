@@ -5,7 +5,7 @@ import pytest
 
 from ptychography.core.wave import Wave
 from ptychography.core.measurement import Measurement, PoissonMeasurement
-from ptychography.backend.array import set_backend
+from backend.array import set_backend
 
 
 # ---------------------------------------------------------------------

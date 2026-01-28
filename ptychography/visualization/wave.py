@@ -1,6 +1,6 @@
 from ptychography.visualization._mpl import require_matplotlib
 from ptychography.core.wave import Wave
-from ptychography.backend.array import to_numpy
+from backend.array import to_numpy
 import numpy as np
 
 def plot_wave(

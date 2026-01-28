@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Tuple, Optional, Dict, Any
 
-from ptychography.backend.array import xp
+from backend.array import xp
 
 
 @dataclass

@@ -1,5 +1,5 @@
 from typing import List
-from ptychography.backend.array import xp
+from backend.array import xp
 from ptychography.data.diffraction import DiffractionData
 
 

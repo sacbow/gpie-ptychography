@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Optional, Tuple
 
 from ptychography.utils.types import ArrayLike
-from ptychography.backend.array import xp, to_numpy
+from backend.array import xp, to_numpy
 
 
 class Wave:

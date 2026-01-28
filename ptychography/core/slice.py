@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from ptychography.core.propagator import Propagator
-from ptychography.backend.array import xp
+from backend.array import xp
 
 
 class Slice(Propagator):

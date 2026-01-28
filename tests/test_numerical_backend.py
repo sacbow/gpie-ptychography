@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 import importlib.util
 
-from ptychography.backend.array import set_backend, xp
-from ptychography.backend.rng import get_rng, normal
+from backend.array import set_backend, xp
+from backend.rng import get_rng, normal
 
 
 # ------------------------------------------------------------
@@ -48,7 +48,7 @@ def test_fft_roundtrip_identity(backend):
     """fft2c followed by ifft2c should recover the original array."""
     set_backend(backend)
 
-    from ptychography.backend.fft import fft2c, ifft2c
+    from backend.fft import fft2c, ifft2c
 
     xp_ = xp()
     x = xp_.random.randn(16, 16)
@@ -68,7 +68,7 @@ def test_fft_preserves_shape_and_dtype(backend):
     """FFT utilities should preserve array shape and return complex dtype."""
     set_backend(backend)
 
-    from ptychography.backend.fft import fft2c
+    from backend.fft import fft2c
 
     xp_ = xp()
     x = xp_.random.randn(8, 8).astype(xp_.float32)
