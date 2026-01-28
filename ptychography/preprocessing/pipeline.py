@@ -10,14 +10,16 @@ from .normalize import global_max_normalize
 
 
 def preprocess_diffraction_data(
-    data: List[DiffractionData],
+    data: list[DiffractionData],
     *,
+    object_shape: tuple[int, int],
     sort_key: Optional[Callable[[DiffractionData], object]] = None,
     shuffle: bool = False,
     rng: Any = None,
     anscombe: bool = True,
     normalize: bool = True,
 ) -> PreprocessedDiffractionDataset:
+
     """
     Preprocess diffraction data for ptychography solvers.
 
@@ -81,9 +83,12 @@ def preprocess_diffraction_data(
         variance=float(variance),
         indices=indices,
         subpixel_shift=shifts,
+        object_shape=object_shape,
+        probe_shape=amplitude_array.shape[1:],
         meta={
             "anscombe": anscombe,
             "normalize": normalize,
             "scale": scale,
         },
     )
+

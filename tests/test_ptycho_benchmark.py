@@ -241,7 +241,8 @@ def test_ptycho_preprocessing_pipeline(
     from ptychography.preprocessing import preprocess_diffraction_data
 
     processed = preprocess_diffraction_data(
-        diff_items,
+        data = diff_items,
+        object_shape = pmodel.object_shape,
         anscombe=True,
         normalize=True,
     )

@@ -33,6 +33,31 @@ class PtychoModel:
         self._graph.forward()
 
     # ------------------------------------------------------------------
+    # Context info
+    # ------------------------------------------------------------------
+    @property
+    def object_shape(self) -> tuple[int, int]:
+        """
+        Shape of the object domain.
+        """
+        return self._context.object_shape
+
+    @property
+    def probe_shape(self) -> tuple[int, int]:
+        """
+        Shape of the probe (diffraction frame).
+        """
+        return self._context.probe_shape
+
+    @property
+    def n_scan(self) -> int:
+        """
+        Number of scan positions.
+        """
+        return self._context.n_scan
+    
+
+    # ------------------------------------------------------------------
     # DiffractionData construction
     # ------------------------------------------------------------------
 

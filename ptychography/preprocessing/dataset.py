@@ -17,6 +17,16 @@ class PreprocessedDiffractionDataset:
     ndarray-like (NumPy or CuPy).
     """
 
+    object_shape: Tuple[int, int]
+    """
+    shape of object.
+    """
+
+    probe_shape: Tuple[int, int]
+    """
+    shape of probe (= (H, W)).
+    """
+
     variance: float
     """
     Scalar noise variance shared by all diffraction patterns.
